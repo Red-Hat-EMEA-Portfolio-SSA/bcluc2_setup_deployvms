@@ -1,0 +1,24 @@
+---
+ansible-navigator:
+  execution-environment:
+    environment-variables:
+      pass:
+      - CONTROLLER_HOST
+      - CONTROLLER_USERNAME
+      - CONTROLLER_PASSWORD
+      - CONTROLLER_VERIFY_SSL
+      - VMWARE_HOST
+      - VMWARE_USER
+      - VMWARE_PASSWORD
+    image: quay.io/mschreie/bcl-ov:latest
+        ## image: quay.io/redhat_emp1/ee-ansible-ssa:latest
+    pull:
+      policy: missing
+  logging:
+    append: true
+    file: /tmp/navigator/ansible-navigator_bcluc1-setup.log
+  mode: stdout
+  playbook-artifact:
+    enable: True
+    replay: /tmp/navigator/artefacts/ansible_artefact.json
+    save-as: /tmp/navigator/artefacts/ansible_artefact.jsonl

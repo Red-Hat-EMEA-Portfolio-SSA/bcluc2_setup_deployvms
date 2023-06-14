@@ -1,0 +1,71 @@
+- name: DEBUG jobtemplates
+  ansible.builtin.debug:
+    msg: | 
+      "{{ jobtemplates }}"
+
+- name: DEBUG inner_item
+  ansible.builtin.debug:
+    msg: "inner_item: {{ inner_item }}"
+  loop:
+    "{{ jobtemplates }}"
+  loop_control:
+    index_var: inner_item
+
+- name: DEBUG (outer) item
+  ansible.builtin.debug:
+    msg: "item: {{ item }}"
+  loop:
+    "{{ jobtemplates }}"
+  loop_control:
+    index_var: inner_item
+
+- name: DEBUG both items
+  ansible.builtin.debug:
+    msg: | 
+      - "item: {{ item }}"
+      - "inner_item: {{ inner_item }}"
+  loop:
+    "{{ jobtemplates }}"
+  loop_control:
+    index_var: inner_item
+
+- name: DEBUG name of inner/outer item
+  ansible.builtin.debug:
+    msg: "jobtemplate_name: {{ item.name }}"
+  loop:
+    "{{ jobtemplates }}"
+  loop_control:
+    index_var: inner_item
+
+
+- name: Create Job Template Loop
+  ansible.builtin.include_role:
+    name: mschreie.bcl.controller_jobtemplate
+  vars:
+    # controller_host: "{{ controller_host }}"
+    # controller_username: "{{ controller_username }}"
+    # controller_password: "{{ controller_password }}"
+
+    jobtemplate_name:         "{{ item.name }}"
+    jobtemplate_description:  "{{ item.description | default(omit) }}"
+    jobtemplate_organization: "{{ item.organization }}"
+    jobtemplate_inventory:    "{{ item.inventory }}"
+    jobtemplate_project:      "{{ item.project }}"
+    jobtemplate_playbook:     "{{ item.playbook }}"
+    jobtemplate_credentials:  "{{ item.credentials | default(omit) }}"
+    jobtemplate_become:       "{{ item.become }}"
+    jobtemplate_ee:           "{{ item.ee_name }}"
+    jobtemplate_extravars:    "{{ item.extravars | default(omit) }}"
+    jobtemplate_verbosity:    "{{ item.verbosity }}"
+      
+    jobtemplate_workflow_member: "{{ item.workflow_member | default(false,true) }}"
+    jobtemplate_workflow: "{{ item.workflow | default(omit) }}"
+
+    jobtemplate_identifier: "{{ item.identifier | default(omit) }}"
+    jobtemplate_success_nodes: "{{ item.success_nodes | default(omit) }}"
+    jobtemplate_always_nodes: "{{ item.always_nodes | default(omit) }}"
+    jobtemplate_failure_nodes: "{{ item.failure_nodes | default(omit) }}"
+  loop:
+    "{{ jobtemplates }}"
+  loop_control:
+    index_var: inner_item
