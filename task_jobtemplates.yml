@@ -40,7 +40,7 @@
 
 - name: Create Job Template Loop
   ansible.builtin.include_role:
-    name: mschreie.bcl.controller_jobtemplate
+    name: portfoliossa.bcl.controller_jobtemplate
   vars:
     # controller_host: "{{ controller_host }}"
     # controller_username: "{{ controller_username }}"

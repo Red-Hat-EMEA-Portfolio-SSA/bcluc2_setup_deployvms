@@ -7,7 +7,7 @@
   tasks:
     - name: Setup local Inventory
       ansible.builtin.include_role:
-        name: mschreie.bcl.cmdline_inventory
+        name: portfoliossa.bcl.cmdline_inventory
       vars:
         inventory_hosts: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
         inventory_groups: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
@@ -16,7 +16,7 @@
 
     - name: Setup Organization 
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_organization
+        name: portfoliossa.bcl.controller_organization
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -27,7 +27,7 @@
 
     - name: Setup Execution Environment
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_ee
+        name: portfoliossa.bcl.controller_ee
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -45,7 +45,7 @@
 
     - name: Setup Credentials Types
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_credentialtype
+        name: portfoliossa.bcl.controller_credentialtype
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -62,7 +62,7 @@
 
     - name: Add Credentials 
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_credential
+        name: portfoliossa.bcl.controller_credential
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -82,7 +82,7 @@
 
     - name: Create Projects
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_project
+        name: portfoliossa.bcl.controller_project
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -108,7 +108,7 @@
 
     - name: Create static Inventory
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_inventory_static
+        name: portfoliossa.bcl.controller_inventory_static
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
@@ -124,7 +124,7 @@
 
     - name: Create Workflows Template
       ansible.builtin.include_role:
-        name: mschreie.bcl.controller_workflowtemplate
+        name: portfoliossa.bcl.controller_workflowtemplate
       vars:
         # controller_host: "{{ controller_host }}"
         # controller_username: "{{ controller_username }}"
