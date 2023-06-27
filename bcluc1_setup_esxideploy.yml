@@ -38,7 +38,7 @@
         ee_organization: "{{  (lookup('ansible.builtin.vars', item + '_ee')).organization }}"
         state: present
         ee_image: "{{  (lookup('ansible.builtin.vars', item + '_ee')).image }}"
-        ee_credential: "{{  (lookup('ansible.builtin.vars', item + '_ee')).credential | default(omit) }}"
+        ee_credentials: "{{  (lookup('ansible.builtin.vars', item + '_ee')).credentials | default(omit) }}"
         ee_pull: "{{  (lookup('ansible.builtin.vars', item + '_ee')).pull | default ('missing', true)  }}"
       loop:
         - bclov
