@@ -1,0 +1,14 @@
+---
+# small play to test how private key file needs to be presented when uploading
+# into AAP controler credential.
+- name: test extraction of private ssh key file
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: show how ssh key looks via lookup
+      debug:
+         msg: "{{ lookup('file', '../bcl_setup/bcl_setup_config/id_rsa') }}"
+
+    - name: show how ssh key i have looks like
+      debug:
+         msg: "{{ vault_bastion_sshkey | default(omit) }}"
