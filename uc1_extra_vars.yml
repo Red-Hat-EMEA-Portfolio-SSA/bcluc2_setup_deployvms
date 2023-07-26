@@ -1,0 +1,420 @@
+
+# there is an issue with fqdn at the point dns is not jet working...
+# if bastion is done first this should not be an issue
+# on the other hand: certs should refere to fqdn not ip addresses...
+controller_host:     "aap-controller.bcl.redhat.hpecic.com"
+#controller_host:     "10.6.55.2"
+controller_username: "{{ vault_controller_username }}"
+controller_password: "{{ vault_controller_password }}"
+automationhub_host: "aap-privhub.bcl.redhat.hpecic.com"
+#automationhub_host: "10.6.55.3"
+automationhub_password: "{{ vault_controller_password }}"
+
+organization_name: "BCL Organization"
+ogranization_repository_credentials:
+  - Automation Hub RH Certified Repository
+  - Automation Hub Published Repository
+  - Automation Hub Community Repository
+
+# existing credentials:
+# Automation Hub Community Repository      Ansible Galaxy/Automation Hub API Token
+# Automation Hub Container Registry        Container Registry
+# Automation Hub Published Repository      Ansible Galaxy/Automation Hub API Token
+# Automation Hub RH Certified Repository   Ansible Galaxy/Automation Hub API Token
+
+# ee creation
+ees2create: 
+  - bclov
+
+bclov_ee:
+   name: "BCL OV Execution Environment"
+   description: "EE for BCL with OneView and VMware enabled" 
+   organization: "{{ organization_name }}"
+   image: "{{ automationhub_host }}/bcl-ov:latest"
+   credential: "private automation hub registry"
+   pull: "missing"
+
+# credential_types to create:
+credtypes2create: 
+  - "oneview"
+  - "ilo"
+  - "esxi"
+
+oneview_credential_type:
+  name:  "HPE Oneview Credential Type"
+  description: "HPE Oneview SDK Credential Type"
+  inputs:   
+    fields:
+      - id: username
+        type: string
+        label: HPE Oneview username
+      - id: password
+        type: string
+        label: HPE Oneview password
+        secret: true
+      - id: domain
+        type: string
+        label: HPE Oneview Domain
+      - id: api_version
+        type: string
+        label: HPE Oneview Api version
+    required:
+      - username
+      - password
+      - domain
+      - api_version
+  injectors: 
+    extra_vars:
+      oneview_username: "{{'{{ username }}'}}"
+      oneview_password: "{{'{{ password }}'}}"
+      oneview_apiversion: "{{'{{ api_version }}'}}"
+      oneview_domain: "{{'{{ domain }}'}}"
+    env:
+      ONEVIEWSDK_USERNAME: "{{'{{ username }}'}}"
+      ONEVIEWSDK_PASSWORD: "{{'{{ password }}'}}"
+      ONEVIEWSDK_API_VERSION: "{{'{{ api_version }}'}}"
+      ONEVIEWSDK_DOMAIN: "{{'{{ domain }}'}}"
+
+ilo_credential_type:
+  name: "HPE ILO Credential Type"
+  description: "HPE ILO SDK Credential Type"
+  inputs:
+    fields:
+      - type: string
+        id: username
+        label: HPE ILO Username
+      - type: string
+        id: password
+        label: HPE ILO Password
+        secret: true
+    required:
+      - username
+      - password
+  injectors:
+    env:
+      ILO_USERNAME: "{{'{{ username }}'}}"
+      ILO_PASSWORD: "{{'{{ password }}'}}"
+    extra_vars:
+      ilo_username: "{{'{{ username }}'}}"
+      ilo_password: "{{'{{ password }}'}}"
+
+esxi_credential_type:
+  name: "ESXi root user Credential Type"
+  description: "ESXi root user Credential Type"
+  inputs:
+    fields:
+      - type: string
+        id: username
+        label: ESXi root Username
+      - type: string
+        id: password
+        label: ESXi Password
+        secret: True
+    required:
+      - username
+      - password
+  injectors:
+    env:
+      ESXI_USERNAME: "{{'{{ username }}'}}"
+      ESXI_PASSWORD: "{{'{{ password }}'}}"
+    extra_vars:
+      esxi_username: "{{'{{ username }}'}}"
+      esxi_password: "{{'{{ password }}'}}"
+      esxi_rootpw: "{{'{{ password }}'}}"
+
+# credentials to create:
+credentials2create:
+  - oneview
+  - ilo
+  - esxi
+  - vcenter
+  - bastion
+
+bastion_credential:
+  name: "Login to Bastion Host"
+  description: "login to bastion host via ssh"
+  type: "Machine"
+  organization: "{{ organization_name }}"
+  inputs:
+    username: "{{ vault_bastion_username }}"
+    password: "{{ vault_bastion_password   | default(omit) }}"
+    ssh_key_data: "{{ vault_bastion_sshkey | default(omit) }}"
+
+oneview_credential:
+  name: "HPE Oneview Credential"
+  description: "HPE Oneview SDK Credential"
+  type: "{{ oneview_credential_type.name }}"
+  organization: "{{ organization_name }}"
+  inputs:
+    username: "{{ vault_oneview_username }}"
+    password: "{{ vault_oneview_password }}"
+    domain: "{{ vault_oneview_domain }}"
+    api_version: "{{ vault_oneview_apiversion }}"
+
+ilo_credential:
+  name: "HPE ILO Credential"
+  description: "HPE ILO SDK Credential"
+  type: "{{ ilo_credential_type.name }}"
+  organization: "{{ organization_name }}"
+  inputs: 
+    username: "{{ vault_ilo_username }}"
+    password: "{{ vault_ilo_password }}"
+
+esxi_credential:
+  name: "ESXi Credential"
+  description: "ESXi Credential"
+  type: "{{ esxi_credential_type.name }}"
+  organization: "{{ organization_name }}"
+  inputs:
+    username: "root"
+    password: "{{ vault_esxi_rootpw }}"
+
+vcenter_credential:
+  name: "BCL VCenter"
+  description: "BCL VCenter Credential"
+  type: "VMware vCenter"
+  organization: "{{ organization_name }}"
+  inputs: 
+    host: "10.6.55.10"
+    username: "{{ vault_vcenter_username }}"
+    password: "{{ vault_vcenter_password }}"
+
+# projects to create
+projects2create:
+  - "bcl"
+bcl_project:
+  name: "BCL Project"
+  description: "BCL Project"
+  organization: "{{ organization_name }}"
+  scm_type: "git"
+  # scm_url: "git@github.com:Red-Hat-EMEA-Portflio-SSA/bcluc1_setup_esxideploy.git"
+  scm_url: "https://github.com/Red-Hat-EMEA-Portflio-SSA/bcluc1_esxideploy.git"
+  #scm_credential: "{{  vault_githubtoken }}"
+  ee_name: "{{  bclov_ee.name }}"
+
+  # scm_branch: ""
+  # scm_clean: true
+  # scm_delete_on_update: false
+  # scm_refspec: ""
+  # scm_track_submodules: false
+  # scm_upodate_cache_timeout: 50
+  # scm_update_on_launch: false
+  # update_project: false
+
+inventories2create:
+  - "bcl"
+
+bcl_inventory:
+  name: "BCL Inventory"
+  description: "BCL Inventory"
+  organization: "{{ organization_name }}"
+  hosts:
+    - name: localhost
+      # see: https://docs.ansible.com/ansible/latest/inventory/implicit_localhost.html
+      ansible_connection: local
+      ansible_python_interpreter: "{{ansible_playbook_python}}"
+      groups: []
+    - name: bastion_host 
+      host_ip: "10.6.55.4"
+      groups:
+        - bastion
+        - rhel
+    - name: aap-controller
+      host_ip: "10.6.55.2"
+      groups:
+        - controller
+        - rhel
+    - name: aap-privhub
+      host_ip: "10.6.55.3"
+      groups:
+        - privhub
+        - rhel
+
+    - name: oneview_host 
+      host_ip: oneview.bcl.redhat.hpecic.com
+      groups: []
+    - name: rh-bctl-5-gen10
+      ilo_ip:  "10.6.55.205"
+      host_ip: "10.6.54.205"
+      host_nic: vmnic4
+      host_bootproto: 'static'
+      host_mask: "255.255.255.0"
+      host_gw: "10.6.54.1"
+      host_nameserver: "10.6.55.4"
+      oneview_host: "10.6.55.9"
+      groups:
+        - "esx_hosts"
+        - "oneview_targets"
+        - "uc10_targets"
+    - name:  "vcenter"
+      host_ip: '10.6.55.10'
+      groups: []
+  groups:
+    - "bastion"
+    - "controller"
+    - "privhub"
+    - "rhel"
+    - "esx_hosts"
+    - "oneview_targets"
+    - "uc10_targets"
+
+# workflow templates to create
+workflows2create:
+  - "uc1deploy"
+  - "uc1undeploy"
+  
+uc1deploy_workflowtemplate:
+  name: "UC1 deploy ESXi and add to vcenter"
+  description: "configure server via oneview, install, configure ESXi and add to vcenter"
+  organization: "{{ organization_name }}"
+  inventory:    "{{ bcl_inventory.name }}"
+  extravars:  
+    oneview_host: "{{ vault_oneview_host }}"
+    server_hardware_type_name: "DL380 Gen10"
+    manage_mp: false
+    manage_bios: false
+    bastion_named_domain: "bcl.redhat.hpecic.com"
+    bastion_get_url: "http://{{ hostvars.bastion_host.ansible_host }}/isos"
+    bastion_iso_dir: "/var/www/html/isos"
+    org_iso:  "/var/www/html/isos/VMware-VMvisor-Installer-7.0U2a-17867351.x86_64.iso"
+    mnt_dir:  "/esxi_cdrom_mount"
+    wrk_dir:  "/esxi_cdrom"
+    ks_dest: "/esxi_cdrom/ks.cfg"
+    bootoption: "runweasel ks=cdrom:/KS.CFG"
+    bootcfg_dest: "/esxi_cdrom/efi/boot/boot.cfg"
+    bootcfg_dest2: "/esxi_cdrom/boot.cfg"
+    bclvmw_datacentername: "bcl"
+    bclvmw_host: "10.6.55.10"
+    vcenter_hostname: "10.6.55.10"
+
+uc1undeploy_workflowtemplate:
+  name: "UC1 undeploy"
+  description: "reset UC1 as prepartion for next demo"
+  organization: "{{ organization_name }}"
+  inventory:    "{{ bcl_inventory.name }}"
+  extravars:  
+    oneview_host: "{{ vault_oneview_host }}"
+    server_hardware_type_name: "DL380 Gen10"
+    manage_mp: false
+    manage_bios: false
+    bastion_named_domain: "bcl.redhat.hpecic.com"
+    bastion_get_url: "http://{{ hostvars.bastion_host.ansible_host }}/isos"
+    bastion_iso_dir: "/var/www/html/isos"
+    org_iso:  "/var/www/html/isos/VMware-VMvisor-Installer-7.0U2a-17867351.x86_64.iso"
+    mnt_dir:  "/esxi_cdrom_mount"
+    wrk_dir:  "/esxi_cdrom"
+    ks_dest: "/esxi_cdrom/ks.cfg"
+    bootoption: "runweasel ks=cdrom:/KS.CFG"
+    bootcfg_dest: "/esxi_cdrom/efi/boot/boot.cfg"
+    bootcfg_dest2: "/esxi_cdrom/boot.cfg"
+    bclvmw_host: "10.6.55.10"
+    vcenter_hostname: "10.6.55.10"
+
+uc1deploy_jobtemplates:
+  - name:         "Add ESXi to Vcenter"
+    description:  "Add installed and configured ESXi server to existing VCenter"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ bcl_project.name }}"
+    playbook:     "add-esxi-to-vcenter.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ esxi_credential.name }}"
+    become:       false
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc1deploy_workflowtemplate.name }}"
+    identifier: "add_esxi_to_vcenter"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
+
+  - name:         "Install ESXi"
+    description:  "Customize installation iso and install ESXI onto bare metal server"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ bcl_project.name }}"
+    playbook:     "esxi-install.yml"
+    credentials:  
+      - "{{ esxi_credential.name }}"
+      - "{{ bastion_credential.name }}"
+      - "{{ oneview_credential.name }}"
+      - "{{ ilo_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+    workflow_member: true
+    workflow: "{{ uc1deploy_workflowtemplate.name }}"
+    identifier: "esxi_install"
+    success_nodes: 
+      - "add_esxi_to_vcenter"
+    #failure_nodes: []
+    #always_nodes: []
+ 
+  - name:         "Host Config via Oneview"
+    description:  "Configure physical hosts via oneview"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ bcl_project.name }}"
+    playbook:     "oneview-config.yml"
+    credentials:  
+      - "{{ oneview_credential.name }}"
+      - "{{ ilo_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+    workflow_member: true
+    workflow: "{{ uc1deploy_workflowtemplate.name }}"
+    identifier: "oneview_config"
+    success_nodes: 
+      - "esxi_install"
+    #failure_nodes: []
+    #always_nodes: []
+ 
+uc1undeploy_jobtemplates:
+  - name:         "Remove Host from Oneview"
+    description:  "run deployment job but with remove parameter set"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ bcl_project.name }}"
+    playbook:     "oneview-config.yml"
+    credentials:  
+      - "{{ oneview_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    extravars: 
+      remove: true
+    verbosity:    0
+    workflow_member: true
+    workflow: "{{ uc1undeploy_workflowtemplate.name }}"
+    identifier: "oneview_unconfig"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
+
+  - name:         "Remove ESXi from Vcenter"
+    description:  "run deployment job but with remove parameter set"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ bcl_project.name }}"
+    playbook:     "add-esxi-to-vcenter.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ esxi_credential.name }}"
+    become:       false
+    ee_name: "{{  bclov_ee.name }}"
+    extravars: 
+      remove: true
+    verbosity:    0
+    workflow_member: true
+    workflow: "{{ uc1undeploy_workflowtemplate.name }}"
+    identifier: "remove_esxi_from_vcenter"
+    always_nodes:
+      - "oneview_unconfig"
+    #success_nodes: []
+    #failure_nodes: []

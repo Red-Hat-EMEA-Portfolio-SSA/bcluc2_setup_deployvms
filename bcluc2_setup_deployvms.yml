@@ -1,5 +1,5 @@
 ---
-- name: Set up the Lab for an ESXI Deployment in the BCL Lab
+- name: Set up the Lab for an Win and RHEL VM Deployment in the BCL Lab
   gather_facts: false
   hosts:
   - localhost
@@ -11,8 +11,7 @@
       vars:
         inventory_hosts: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
         inventory_groups: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
-      loop:
-        - bcl
+      loop: "{{ inventories2create }}"
 
     - name: Setup Organization 
       ansible.builtin.include_role:
@@ -40,8 +39,7 @@
         ee_image: "{{  (lookup('ansible.builtin.vars', item + '_ee')).image }}"
         ee_credential: "{{  (lookup('ansible.builtin.vars', item + '_ee')).credential | default(omit) }}"
         ee_pull: "{{  (lookup('ansible.builtin.vars', item + '_ee')).pull | default ('missing', true)  }}"
-      loop:
-        - bclov
+      loop: "{{ ees2create }}"
 
     - name: Setup Credentials Types
       ansible.builtin.include_role:
@@ -55,10 +53,7 @@
         credentialtype_description: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).description }}"
         credentialtype_inputs: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).inputs }}"
         credentialtype_injectors: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).injectors }}"
-      loop:
-        - oneview
-        - ilo
-        - esxi
+      loop: "{{ credtypes2create }}"
 
     - name: Add Credentials 
       ansible.builtin.include_role:
@@ -73,12 +68,7 @@
         credential_organization: "{{  (lookup('ansible.builtin.vars', item + '_credential')).organization }}"
         credential_type: "{{  (lookup('ansible.builtin.vars', item + '_credential')).type }}"
         credential_inputs: "{{  (lookup('ansible.builtin.vars', item + '_credential')).inputs }}"
-      loop:
-        - oneview
-        - ilo
-        - esxi
-        - vcenter
-        - bastion
+      loop: "{{ credentials2create }}"
 
     - name: Create Projects
       ansible.builtin.include_role:
@@ -103,8 +93,7 @@
         # project_scm_upodate_cache_timeout: "{{ (lookup('ansible.builtin.vars', item + '_project')).upodate_cache_timeout  | default (omit) }}"
         # project_scm_update_on_launch: "{{ (lookup('ansible.builtin.vars', item + '_project')).scm_update_on_launch | default (false, true) }}"
         # project_update_project: "{{ (lookup('ansible.builtin.vars', item + '_project')).update_project | default (false, true) }}"
-      loop:
-        - bcl
+      loop: "{{ projects2create }}"
 
     - name: Create static Inventory
       ansible.builtin.include_role:
@@ -119,8 +108,7 @@
         inventory_organization: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).organization }}"
         inventory_hosts: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
         inventory_groups: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
-      loop:
-        - bcl
+      loop: "{{ inventories2create }}"
 
     - name: Create Workflows Template
       ansible.builtin.include_role:
@@ -135,9 +123,7 @@
         workflowtemplate_organization: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).organization }}"
         workflowtemplate_inventory: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).inventory }}"
         workflowtemplate_extravars: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).extravars | default(omit) }}"
-      loop:
-        - uc1deploy
-        - uc1undeploy
+      loop: "{{ workflows2create }}"
 
       # need to set up last jobtemplate first
     - name: Create Job Templates
@@ -148,6 +134,4 @@
         # controller_username: "{{ controller_username }}"
         # controller_password: "{{ controller_password }}"
         jobtemplates:         "{{ (lookup('ansible.builtin.vars', item + '_jobtemplates')) }}"
-      loop:
-        - uc1deploy
-        - uc1undeploy
+      loop: "{{ workflows2create }}"
