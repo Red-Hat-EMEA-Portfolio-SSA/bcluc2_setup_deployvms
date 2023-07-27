@@ -123,6 +123,21 @@ esxi_credential_type:
 credentials2create:
   - vcenter
   - bastion
+  - controller
+  - winvm
+  - rhelvm
+
+controller_credential:
+  name: "Login to AAP Controler itself"
+  description: "login to AAP Controller via API"
+  type: "Red Hat Ansible Automation Platform"
+  organization: "{{ organization_name }}"
+  inputs:
+    host: "{{ vault_controller_controller }}"
+    username: "{{ vault_controller_username }}"
+    password: "{{ vault_controller_password }}"
+    oaut_token: "{{ vault_controller_oauthtoken | default(omit) }}"
+    verify_ssl: false
 
 bastion_credential:
   name: "Login to Bastion Host"
@@ -172,6 +187,26 @@ vcenter_credential:
     host: "10.6.55.10"
     username: "{{ vault_vcenter_username }}"
     password: "{{ vault_vcenter_password }}"
+
+winvm_credential:
+  name: "Login to Windows VMs"
+  description: "login to Windows VMs of UC2"
+  type: "Machine"
+  organization: "{{ organization_name }}"
+  inputs:
+    username: "{{ vault_winvm_username }}"
+    password: "{{ vault_winvm_password   | default(omit) }}"
+
+rhelvm_credential:
+  name: "Login to RHEL VMs"
+  description: "login to RHEL VMs of UC2"
+  type: "Machine"
+  organization: "{{ organization_name }}"
+  inputs:
+    username: "{{ vault_rhelvm_username }}"
+    password: "{{ vault_rhelvm_password   | default(omit) }}"
+    ssh_key_data: "{{ vault_rhelvm_sshkey | default(omit) }}"
+    become_password: "{{ vault_rhelvm_becomepassword | default(omit) }}"
 
 # projects to create
 projects2create:
@@ -273,12 +308,13 @@ bcl_inventory:
 
 # workflow templates to create
 workflows2create:
-  - "uc2createtemplate"
-##  - "uc2deployvms"
-##  - "uc2undeploy"
+  - "uc2createrheltemplate"
+  - "uc2createwintemplate"
+  - "uc2deployvms"
+  - "uc2reset"
 
-uc2createtemplate_workflowtemplate:
-  name: "UC2 create a VM template for use of VM mass deployments"
+uc2createrheltemplate_workflowtemplate:
+  name: "UC2 create a RHEL VM template for use of VM mass deployments"
   description: "create a vm via unattended install or kickstart install and convert to template"
   organization: "{{ organization_name }}"
   inventory:    "{{ bcl_inventory.name }}"
@@ -325,6 +361,124 @@ uc2createtemplate_workflowtemplate:
         my_template_memory_mib: 4096
         my_template_disk_capacity_gb: 50
 
+uc2createwintemplate_workflowtemplate:
+  name: "UC2 create a Win VM template for use of VM mass deployments"
+  description: "create a vm via unattended install or kickstart install and convert to template"
+  organization: "{{ organization_name }}"
+  inventory:    "{{ bcl_inventory.name }}"
+  extravars:  
+    #Remember to pass the ENV variables "VMWARE_HOST" and "VMWARE_PASSWORD" to the EE
+
+    my_vcenter_datacenter_name: "bcl"
+    my_vcenter_cluster_name: "bcl-cluster"
+    my_vcenter_datastore_name: "datastore1 (1)"
+    my_vcenter_virtual_switch_name: "DSwitch-test"
+    my_vcenter_port_segment_name: "DPortGroup-test"
+    # need to move to: (but only when they are working correctly)
+    # my_vcenter_virtual_switch_name: bcl-vswitch # vmc-hostswitch # already in place
+    # my_vcenter_port_segment_name: bcl-wrklds # already in place
+    my_vcenter_folder_name: vms
+    my_vcenter_isofile_dir: "/ISO Files"
+    my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
+
+    my_content_library_name: my_library_on_datastore
+    
+    flavor:
+      rhel:
+        my_os_type: "RHEL"
+        my_original_iso_full_filename: "/var/www/html/isos/rhel-9.2-x86_64-dvd.iso"
+        my_custom_iso: "/var/www/html/isos/custom-rhel92.iso"
+        my_custom_iso_short: "custom-rhel92.iso"
+        my_template_name: "custom-rhel-template"
+
+        my_system_language: en_US
+        my_keyboard_layout: es
+        my_time_zone: Europe/Paris
+        my_root_pass: redhat
+        my_template_cpu_count: 4
+        my_template_memory_mib: 8192
+        my_template_disk_capacity_gb: 30
+      win:
+        my_os_type: "Windows"
+        my_original_iso_full_filename: "/var/www/html/isos/windows2019.iso"
+        my_custom_iso: "/var/www/html/isos/custom-windows2019.iso"
+        my_custom_iso_short: "custom-windows2019.iso"
+        my_template_name: "custom_windows19-template"
+    
+        my_template_cpu_count: 2
+        my_template_memory_mib: 4096
+        my_template_disk_capacity_gb: 50
+
+uc2deployvms_workflowtemplate:
+  name: "UC2 deploy VMs from templates"
+  description: "use RHEL VM template or Win VM template to deploy VMs"
+  organization: "{{ organization_name }}"
+  inventory:    "{{ bcl_inventory.name }}"
+  extravars:  
+    #Remember to pass the ENV variables "VMWARE_HOST" and "VMWARE_PASSWORD" to the EE
+
+    my_vcenter_datacenter_name: "bcl"
+    my_vcenter_cluster_name: "bcl-cluster"
+    my_vcenter_datastore_name: "datastore1 (1)"
+    my_vcenter_virtual_switch_name: "DSwitch-test"
+    my_vcenter_port_segment_name: "DPortGroup-test"
+    # need to move to: (but only when they are working correctly)
+    # my_vcenter_virtual_switch_name: bcl-vswitch # vmc-hostswitch # already in place
+    # my_vcenter_port_segment_name: bcl-wrklds # already in place
+    my_vcenter_folder_name: vms
+    my_vcenter_isofile_dir: "/ISO Files"
+    my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
+
+    my_content_library_name: my_library_on_datastore
+    
+    flavor:
+      rhel:
+        my_os_type: "RHEL"
+        my_original_iso_full_filename: "/var/www/html/isos/rhel-9.2-x86_64-dvd.iso"
+        my_custom_iso: "/var/www/html/isos/custom-rhel92.iso"
+        my_custom_iso_short: "custom-rhel92.iso"
+        my_template_name: "custom-rhel-template"
+
+        my_system_language: en_US
+        my_keyboard_layout: es
+        my_time_zone: Europe/Paris
+        my_root_pass: redhat
+        my_template_cpu_count: 4
+        my_template_memory_mib: 8192
+        my_template_disk_capacity_gb: 30
+      win:
+        my_os_type: "Windows"
+        my_original_iso_full_filename: "/var/www/html/isos/windows2019.iso"
+        my_custom_iso: "/var/www/html/isos/custom-windows2019.iso"
+        my_custom_iso_short: "custom-windows2019.iso"
+        my_template_name: "custom_windows19-template"
+    
+        my_template_cpu_count: 2
+        my_template_memory_mib: 4096
+        my_template_disk_capacity_gb: 50
+
+uc2reset_workflowtemplate:
+  name: "UC2 reset to initial state"
+  description: "Deletes all VMs in the VCenter"
+  organization: "{{ organization_name }}"
+  inventory:    "{{ bcl_inventory.name }}"
+  extravars:  
+    #Remember to pass the ENV variables "VMWARE_HOST" and "VMWARE_PASSWORD" to the EE
+
+    my_vcenter_datacenter_name: "bcl"
+    my_vcenter_cluster_name: "bcl-cluster"
+    my_vcenter_datastore_name: "datastore1 (1)"
+    my_vcenter_virtual_switch_name: "DSwitch-test"
+    my_vcenter_port_segment_name: "DPortGroup-test"
+    # need to move to: (but only when they are working correctly)
+    # my_vcenter_virtual_switch_name: bcl-vswitch # vmc-hostswitch # already in place
+    # my_vcenter_port_segment_name: bcl-wrklds # already in place
+    my_vcenter_folder_name: vms
+    my_vcenter_isofile_dir: "/ISO Files"
+    my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
+
+    my_content_library_name: my_library_on_datastore
+    
 
 uc1deploy_workflowtemplate:
   name: "UC1 deploy ESXi and add to vcenter"
@@ -373,7 +527,7 @@ uc1undeploy_workflowtemplate:
     bclvmw_host: "10.6.55.10"
     vcenter_hostname: "10.6.55.10"
 
-uc2createtemplate_jobtemplates:
+uc2createrheltemplate_jobtemplates:
   - name:         "Create RHEL template"
     description:  "Create RHEL template"
     organization: "{{ organization_name }}"
@@ -382,13 +536,14 @@ uc2createtemplate_jobtemplates:
     playbook:     "05d-create-template.yml"
     credentials:  
       - "{{ vcenter_credential.name }}"
+      - "{{ controller_credential.name }}"
     become:       false
     ee_name: "{{  bclov_ee.name }}"
     # extravars:  {}
     verbosity:    0
 
     workflow_member: true
-    workflow: "{{ uc2createtemplate_workflowtemplate.name }}"
+    workflow: "{{ uc2createrheltemplate_workflowtemplate.name }}"
 
     identifier: "createrheltemplate"
     #always_nodes: []
@@ -409,7 +564,7 @@ uc2createtemplate_jobtemplates:
     verbosity:    0
 
     workflow_member: true
-    workflow: "{{ uc2createtemplate_workflowtemplate.name }}"
+    workflow: "{{ uc2createrheltemplate_workflowtemplate.name }}"
 
     identifier: "sealrheltemplate"
     success_nodes: 
@@ -425,13 +580,14 @@ uc2createtemplate_jobtemplates:
     playbook:     "05a-create-rhel-from-cdrom.yml"
     credentials:  
       - "{{ vcenter_credential.name }}"
+      - "{{ controller_credential.name }}"
     become:       false
     ee_name: "{{  bclov_ee.name }}"
     # extravars:  {}
     verbosity:    0
 
     workflow_member: true
-    workflow: "{{ uc2createtemplate_workflowtemplate.name }}"
+    workflow: "{{ uc2createrheltemplate_workflowtemplate.name }}"
 
     identifier: "instrhelfromiso"
     success_nodes: 
@@ -449,12 +605,12 @@ uc2createtemplate_jobtemplates:
       - "{{ vcenter_credential.name }}"
       - "{{ bastion_credential.name }}"
     become:       false
-    ee_name: "{{  bclov_ee.name }}"
+    ee_name: "{{ bclov_ee.name }}"
     # extravars:  {}
     verbosity:    0
 
     workflow_member: true
-    workflow: "{{ uc2createtemplate_workflowtemplate.name }}"
+    workflow: "{{ uc2createrheltemplate_workflowtemplate.name }}"
 
     identifier: "uploadrheliso"
     success_nodes: 
@@ -471,18 +627,208 @@ uc2createtemplate_jobtemplates:
     credentials:  
       - "{{ bastion_credential.name }}"
     become:       true
-    ee_name: "{{  bclov_ee.name }}"
+    ee_name: "{{ bclov_ee.name }}"
     # extravars:  {}
     verbosity:    0
 
     workflow_member: true
-    workflow: "{{ uc2createtemplate_workflowtemplate.name }}"
+    workflow: "{{ uc2createrheltemplate_workflowtemplate.name }}"
 
     identifier: "createrheliso"
     success_nodes: 
       - "uploadrheliso"
     #failure_nodes: []
     #always_nodes: []
+
+uc2createwintemplate_jobtemplates:
+  - name:         "Create Win template"
+    description:  "Create Win template"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "06-create-windows-vmware-template.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ controller_credential.name }}"
+      # Win VM Credentials
+    become:       false
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2createwintemplate_workflowtemplate.name }}"
+
+    identifier: "createrwinemplate"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
+
+  - name:         "Upload customized Win ISO"
+    description:  "Upload customized Win ISO"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "04-upload-windows-custom-iso-to-vmware.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ bastion_credential.name }}"
+    become:       false
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2createwintemplate_workflowtemplate.name }}"
+
+    identifier: "uploadwiniso"
+    success_nodes: 
+      - "createrwinemplate"
+    #always_nodes: []
+    #failure_nodes: []
+
+  - name:         "Create customized Win ISO"
+    description:  "Create customized Win ISO"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "02-create-windows-custom-iso.yml"
+    credentials:  
+      - "{{ bastion_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2createwintemplate_workflowtemplate.name }}"
+
+    identifier: "createwiniso"
+    success_nodes: 
+      - "uploadwiniso"
+    #always_nodes: []
+    #failure_nodes: []
+
+
+uc2deployvms_jobtemplates:
+  - name:         "Deploy webserver on Windows VMs"
+    description:  "Deploy webserver on Windows VMs"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "08-deploy-webservers.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ winvm_credential.name }}"
+    ee_name: "{{  bclov_ee.name }}"
+    limit: "windows2019srv_64Guest"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2deployvms_workflowtemplate.name }}"
+
+    identifier: "deploywinwebserver"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
+
+  - name:         "Deploy webserver on RHEL VMs"
+    description:  "Deploy webserver on RHEL VMs"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "08-deploy-webservers.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ rhelvm_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    limit: "rhel9_64Guest"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2deployvms_workflowtemplate.name }}"
+
+    identifier: "deployrhelwebserver"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
+
+
+  - name:         "Baseconfig of RHEL VMs"
+    description:  "Base line configuration of RHEL VMs"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "07a-baseconfig-rhel.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ rhelvm_credential.name }}"
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    limit: "rhel9_64Guest"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2deployvms_workflowtemplate.name }}"
+
+    identifier: "baseconfigrhelwebserver"
+    success_nodes: 
+      - "deployrhelwebserver"
+    #always_nodes: []
+    #failure_nodes: []
+
+  - name:         "Deploy VMs from Template"
+    description:  "Deploy RHEL or Windows VMs from respective Template"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "07-create-vm-from-template-community.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ controller_credential.name }}"
+      # RHEL VM credential
+      # Windows VM credential
+    become:       true
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2deployvms_workflowtemplate.name }}"
+
+    identifier: "deployvms"
+    success_nodes: 
+      -  "deploywinwebserver"
+      -  "baseconfigrhelwebserver"
+    #always_nodes: []
+    #failure_nodes: []
+
+uc2reset_jobtemplates:
+  - name:         "Delete all VMs"
+    description:  "Find and delete all VMs in the VCenter"
+    organization: "{{ organization_name }}"
+    inventory:    "{{ bcl_inventory.name }}"
+    project:      "{{ uc2_project.name }}"
+    playbook:     "99-delete-all-vms.yml"
+    credentials:  
+      - "{{ vcenter_credential.name }}"
+      - "{{ controller_credential.name }}"
+    become:       false
+    ee_name: "{{  bclov_ee.name }}"
+    # extravars:  {}
+    verbosity:    0
+
+    workflow_member: true
+    workflow: "{{ uc2reset_workflowtemplate.name }}"
+
+    identifier: "deleteallvms"
+    #always_nodes: []
+    #failure_nodes: []
+    #success_nodes: []
 
 uc1deploy_jobtemplates:
   - name:         "Add ESXi to Vcenter"
