@@ -2,3 +2,4 @@ bcluc1_setup_esxideploy_config/
 collections/
 ansible.cfg
 ansible-navigator.log
+*vault*
