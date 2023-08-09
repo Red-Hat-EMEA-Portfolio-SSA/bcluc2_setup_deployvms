@@ -659,7 +659,7 @@ uc2createwintemplate_jobtemplates:
     workflow_member: true
     workflow: "{{ uc2createwintemplate_workflowtemplate.name }}"
 
-    identifier: "createrwinemplate"
+    identifier: "createrwintemplate"
     #always_nodes: []
     #failure_nodes: []
     #success_nodes: []
@@ -683,7 +683,7 @@ uc2createwintemplate_jobtemplates:
 
     identifier: "uploadwiniso"
     success_nodes: 
-      - "createrwinemplate"
+      - "createrwintemplate"
     #always_nodes: []
     #failure_nodes: []
 
