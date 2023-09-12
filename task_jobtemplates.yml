@@ -58,7 +58,7 @@
     jobtemplate_extravars:    "{{ item.extravars | default(omit) }}"
     jobtemplate_verbosity:    "{{ item.verbosity }}"
     jobtemplate_limit:        "{{ item.limit | default(omit) }}"
-      
+
     jobtemplate_workflow_member: "{{ item.workflow_member | default(false,true) }}"
     jobtemplate_workflow: "{{ item.workflow | default(omit) }}"
 

@@ -188,7 +188,7 @@ bcl_project:
   organization: "{{ organization_name }}"
   scm_type: "git"
   # scm_url: "git@github.com:Red-Hat-EMEA-Portflio-SSA/bcluc1_setup_esxideploy.git"
-  scm_url: "https://github.com/Red-Hat-EMEA-Portflio-SSA/bcluc1_esxideploy.git"
+  scm_url: "https://github.com/Red-Hat-EMEA-Portfolio-SSA/bcluc1_esxideploy.git"
   #scm_credential: "{{  vault_githubtoken }}"
   ee_name: "{{  bclov_ee.name }}"
 
@@ -284,6 +284,7 @@ uc1deploy_workflowtemplate:
     bootcfg_dest: "/esxi_cdrom/efi/boot/boot.cfg"
     bootcfg_dest2: "/esxi_cdrom/boot.cfg"
     bclvmw_datacentername: "bcl"
+    bclvmw_clustername: "bcl-cluster"
     bclvmw_host: "10.6.55.10"
     vcenter_hostname: "10.6.55.10"
 
@@ -307,6 +308,8 @@ uc1undeploy_workflowtemplate:
     bootoption: "runweasel ks=cdrom:/KS.CFG"
     bootcfg_dest: "/esxi_cdrom/efi/boot/boot.cfg"
     bootcfg_dest2: "/esxi_cdrom/boot.cfg"
+    bclvmw_datacentername: "bcl"
+    bclvmw_clustername: "bcl-cluster"
     bclvmw_host: "10.6.55.10"
     vcenter_hostname: "10.6.55.10"
 

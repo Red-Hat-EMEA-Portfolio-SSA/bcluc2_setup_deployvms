@@ -1,7 +1,6 @@
 # Repo to set up all objects within existing AAP 
-# to run usecase 2
-# the Repo should be so flexible that by only changing extra_vars any other usecase might be deployed.
-#     - not there yet -
+# works for usecase 1 and 2
+# the Repo is flexible enough to deploy any usecase by only changing extra_vars 
 
 
 ##Needs to run form someone with SSH key to connect to the RHEL template used later...
@@ -10,10 +9,9 @@
 ## mschreie@mschreie
 ## mschreie@rhel9msi.example.com
 
-# I'm working with execution environments, whihc are needed for the different
-# moduels. I do not have one EE which just works for everything due to 
-# dependencies.
-# bcl-ov:12
+# I'm working with execution environments, which are needed for the different
+# modules. (e.g hpe.oneview and community.vmware vmware.vmware_rest)
+# bcl-ov:18
 
 
 echo "start the ssh-agent like this:"
@@ -44,8 +42,6 @@ main vars to define what gets defined:
    projects2create            - list with names of projects which are defined later in more detail   <name>_project
    workflows2create            - list with names of projects which are defined later in more detail   <name>_workflowtemplate
       hint: each workflow will have a list with jobtemplates so the same name is also used for <name>_jobtemplates
-   
-
 
 
 # Setting up AAP (including bastion host)
