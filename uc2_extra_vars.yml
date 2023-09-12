@@ -323,7 +323,6 @@ uc2createrheltemplate_workflowtemplate:
 
     my_vcenter_datacenter_name: "bcl"
     my_vcenter_cluster_name: "bcl-cluster"
-    ##my_vcenter_datastore_name: "datastore1 (1)"
     my_vcenter_datastore_name: "vsanDatastore"
     my_vcenter_virtual_switch_name: "DSwitch-test"
     my_vcenter_port_segment_name: "DPortGroup-test"
@@ -332,7 +331,6 @@ uc2createrheltemplate_workflowtemplate:
     # my_vcenter_port_segment_name: bcl-wrklds # already in place
     my_vcenter_folder_name: vms
     my_vcenter_isofile_dir: "/ISO Files"
-    ##my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
     my_vcenter_isofile_dir_with_ds: "[vsanDatastore] ISO Files"
 
     my_content_library_name: my_library_on_datastore
@@ -373,7 +371,6 @@ uc2createwintemplate_workflowtemplate:
 
     my_vcenter_datacenter_name: "bcl"
     my_vcenter_cluster_name: "bcl-cluster"
-    ##my_vcenter_datastore_name: "datastore1 (1)"
     my_vcenter_datastore_name: "vsanDatastore"
     my_vcenter_virtual_switch_name: "DSwitch-test"
     my_vcenter_port_segment_name: "DPortGroup-test"
@@ -382,7 +379,6 @@ uc2createwintemplate_workflowtemplate:
     # my_vcenter_port_segment_name: bcl-wrklds # already in place
     my_vcenter_folder_name: vms
     my_vcenter_isofile_dir: "/ISO Files"
-    ##my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
     my_vcenter_isofile_dir_with_ds: "[vsanDatastore] ISO Files"
 
     my_content_library_name: my_library_on_datastore
@@ -423,7 +419,6 @@ uc2deployvms_workflowtemplate:
 
     my_vcenter_datacenter_name: "bcl"
     my_vcenter_cluster_name: "bcl-cluster"
-    ##my_vcenter_datastore_name: "datastore1 (1)"
     my_vcenter_datastore_name: "vsanDatastore"
     my_vcenter_virtual_switch_name: "DSwitch-test"
     my_vcenter_port_segment_name: "DPortGroup-test"
@@ -432,7 +427,6 @@ uc2deployvms_workflowtemplate:
     # my_vcenter_port_segment_name: bcl-wrklds # already in place
     my_vcenter_folder_name: vms
     my_vcenter_isofile_dir: "/ISO Files"
-    ##my_vcenter_isofile_dir_with_ds: "[datastore1 (1)] ISO Files"
     my_vcenter_isofile_dir_with_ds: "[vsanDatastore] ISO Files"
 
     my_content_library_name: my_library_on_datastore
@@ -473,7 +467,6 @@ uc2reset_workflowtemplate:
 
     my_vcenter_datacenter_name: "bcl"
     my_vcenter_cluster_name: "bcl-cluster"
-    ##my_vcenter_datastore_name: "datastore1 (1)"
     my_vcenter_datastore_name: "vsanDatastore"
     my_vcenter_virtual_switch_name: "DSwitch-test"
     my_vcenter_port_segment_name: "DPortGroup-test"
