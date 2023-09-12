@@ -1,5 +1,5 @@
 ---
-- name: Set up the Lab for an Win and RHEL VM Deployment in the BCL Lab
+- name: Set up AAP with all Artefacts for a Usecase in the BCL Lab
   gather_facts: false
   hosts:
     - localhost
@@ -9,8 +9,8 @@
       ansible.builtin.include_role:
         name: portfoliossa.bcl.cmdline_inventory
       vars:
-        inventory_hosts: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
-        inventory_groups: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
+        inventory_hosts: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
+        inventory_groups: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
       loop: "{{ inventories2create }}"
 
     - name: Setup Organization
@@ -49,10 +49,10 @@
         # controller_username: "{{ controller_username }}"
         # controller_password: "{{ controller_password }}"
 
-        credentialtype_name: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).name }}"
-        credentialtype_description: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).description }}"
-        credentialtype_inputs: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).inputs }}"
-        credentialtype_injectors: "{{  (lookup('ansible.builtin.vars', item + '_credential_type')).injectors }}"
+        credentialtype_name: "{{ (lookup('ansible.builtin.vars', item + '_credential_type')).name }}"
+        credentialtype_description: "{{ (lookup('ansible.builtin.vars', item + '_credential_type')).description }}"
+        credentialtype_inputs: "{{ (lookup('ansible.builtin.vars', item + '_credential_type')).inputs }}"
+        credentialtype_injectors: "{{ (lookup('ansible.builtin.vars', item + '_credential_type')).injectors }}"
       loop: "{{ credtypes2create }}"
 
     - name: Add Credentials
@@ -63,11 +63,11 @@
         # controller_username: "{{ controller_username }}"
         # controller_password: "{{ controller_password }}"
 
-        credential_name: "{{  (lookup('ansible.builtin.vars', item + '_credential')).name }}"
-        credential_description: "{{  (lookup('ansible.builtin.vars', item + '_credential')).description }}"
-        credential_organization: "{{  (lookup('ansible.builtin.vars', item + '_credential')).organization }}"
-        credential_type: "{{  (lookup('ansible.builtin.vars', item + '_credential')).type }}"
-        credential_inputs: "{{  (lookup('ansible.builtin.vars', item + '_credential')).inputs }}"
+        credential_name: "{{ (lookup('ansible.builtin.vars', item + '_credential')).name }}"
+        credential_description: "{{ (lookup('ansible.builtin.vars', item + '_credential')).description }}"
+        credential_organization: "{{ (lookup('ansible.builtin.vars', item + '_credential')).organization }}"
+        credential_type: "{{ (lookup('ansible.builtin.vars', item + '_credential')).type }}"
+        credential_inputs: "{{ (lookup('ansible.builtin.vars', item + '_credential')).inputs }}"
       loop: "{{ credentials2create }}"
 
     - name: Create Projects
@@ -103,11 +103,11 @@
         # controller_username: "{{ controller_username }}"
         # controller_password: "{{ controller_password }}"
 
-        inventory_name: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).name }}"
-        inventory_description: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).description }}"
-        inventory_organization: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).organization }}"
-        inventory_hosts: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
-        inventory_groups: "{{  (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
+        inventory_name: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).name }}"
+        inventory_description: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).description }}"
+        inventory_organization: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).organization }}"
+        inventory_hosts: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).hosts }}"
+        inventory_groups: "{{ (lookup('ansible.builtin.vars', item + '_inventory')).groups }}"
       loop: "{{ inventories2create }}"
 
     - name: Create Workflows Template
@@ -118,11 +118,11 @@
         # controller_username: "{{ controller_username }}"
         # controller_password: "{{ controller_password }}"
 
-        workflowtemplate_name: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).name }}"
-        workflowtemplate_description: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).description | default(omit) }}"
-        workflowtemplate_organization: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).organization }}"
-        workflowtemplate_inventory: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).inventory }}"
-        workflowtemplate_extravars: "{{  (lookup('ansible.builtin.vars', item + '_workflowtemplate')).extravars | default(omit) }}"
+        workflowtemplate_name: "{{ (lookup('ansible.builtin.vars', item + '_workflowtemplate')).name }}"
+        workflowtemplate_description: "{{ (lookup('ansible.builtin.vars', item + '_workflowtemplate')).description | default(omit) }}"
+        workflowtemplate_organization: "{{ (lookup('ansible.builtin.vars', item + '_workflowtemplate')).organization }}"
+        workflowtemplate_inventory: "{{ (lookup('ansible.builtin.vars', item + '_workflowtemplate')).inventory }}"
+        workflowtemplate_extravars: "{{ (lookup('ansible.builtin.vars', item + '_workflowtemplate')).extravars | default(omit) }}"
       loop: "{{ workflows2create }}"
 
       # need to set up last jobtemplate first
